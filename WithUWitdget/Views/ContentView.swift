@@ -6,63 +6,62 @@
 //
 
 import SwiftUI
-
-struct Cats: Identifiable {
-  var id = UUID()
-  var name: String
-}
+import WidgetKit
 
 struct ContentView: View {
 
-  var cats: [Cats] = [Cats(name: "cat1"),Cats(name: "cat2"),Cats(name: "cat3"),Cats(name: "cat4"),Cats(name: "cat5")]
-  @State var leftCat = "cat1"
-  @State var rightCat = "cat1"
+  @StateObject var vm = ViewModel()
 
   var body: some View {
     VStack {
       HStack {
         Text("Left cat")
           .bold()
-        Image(leftCat)
+        Image(vm.leftCat)
           .resizable()
           .frame(width: 75, height: 75)
       }
       HStack {
         Text("Right cat")
           .bold()
-        Image(rightCat)
+        Image(vm.rightCat)
           .resizable()
           .frame(width: 75, height: 75)
       }
       ScrollView {
         HStack {
-          ForEach(cats) { cat in
+          ForEach(vm.cats) { cat in
             Image(cat.name)
               .resizable()
               .frame(width: 75, height: 75)
               .onTapGesture {
-                leftCat = cat.name
+                vm.leftCat = cat.name
+                UserDefaults(suiteName: "group.artemiithefrog.WithUWitdget")?.setValue(cat.name, forKey: "catLeft")
               }
           }
         }
       }
       ScrollView {
         HStack {
-          ForEach(cats) { cat in
+          ForEach(vm.cats) { cat in
             Image(cat.name)
               .resizable()
               .frame(width: 75, height: 75)
               .onTapGesture {
-                rightCat = cat.name
+                vm.rightCat = cat.name
+                UserDefaults(suiteName: "group.artemiithefrog.WithUWitdget")?.setValue(cat.name, forKey: "catRight")
               }
           }
         }
       }
-
+    }
+    .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+      WidgetCenter.shared.reloadTimelines(ofKind: "HelloWorldSmallWidget")
+      WidgetCenter.shared.reloadTimelines(ofKind: "HelloWorldMediumWidget")
+      print("Widget reloaded")
     }
   }
 }
-
 #Preview {
   ContentView()
 }
